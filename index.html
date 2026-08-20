@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>WebXR + Three.js + TypeScript</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; overflow: hidden; background: #101015; }
+      #app { position: fixed; inset: 0; }
+      #info {
+        position: fixed;
+        top: 12px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+        pointer-events: none;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+      }
+
+      /*
+        Relatório da sonda de capacidades (Tarefa 2).
+        Fica no <body>, fora de #app, para permanecer disponível como
+        dom-overlay dentro de uma sessão de AR (ver ARButton em main.ts).
+        Texto grande e contraste alto: dentro de um visor, a resolução
+        angular é bem menor que a de um monitor a meio metro dos olhos.
+      */
+      #sonda-painel {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        max-width: min(420px, 100vw);
+        max-height: 70vh;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: #eef0ff;
+      }
+      #sonda-alternar {
+        display: block;
+        margin-left: auto;
+        padding: 10px 16px;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        color: #eef0ff;
+        background: #24243a;
+        border: 1px solid #4f7cff;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+      }
+      #sonda-conteudo {
+        overflow-y: auto;
+        max-height: calc(70vh - 44px);
+        padding: 14px 16px 20px;
+        background: rgba(16, 16, 21, 0.92);
+        border: 1px solid #4f7cff;
+        border-top: none;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      #sonda-painel.recolhido #sonda-conteudo { display: none; }
+      #sonda-conteudo h2 {
+        margin: 14px 0 6px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #9aa3c7;
+      }
+      #sonda-conteudo h2:first-child { margin-top: 0; }
+      #sonda-conteudo p { margin: 4px 0; }
+      #sonda-conteudo .linha-topo { font-size: 14px; color: #cfd4ec; }
+      #sonda-conteudo .classe { font-size: 15px; }
+      #sonda-conteudo .aviso { color: #f0c869; }
+      #sonda-conteudo .ok-texto { color: #6ee787; }
+      #sonda-conteudo ul.lista { list-style: none; margin: 4px 0; padding: 0; }
+      #sonda-conteudo ul.lista li {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      #sonda-conteudo .rotulo { color: #cfd4ec; }
+      #sonda-conteudo .detalhe { flex-basis: 100%; font-size: 12px; color: #8b93b8; }
+      #sonda-conteudo .valor { font-weight: 700; }
+      #sonda-conteudo .valor.ok { color: #6ee787; }
+      #sonda-conteudo .valor.no { color: #ff8a80; }
+      #sonda-conteudo .valor.indet { color: #f0c869; }
+      strong.ok { color: #6ee787; }
+      strong.no { color: #ff8a80; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="info">Clique em <b>ENTER VR</b> ou <b>START AR</b>. No desktop, arraste para orbitar.</div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
