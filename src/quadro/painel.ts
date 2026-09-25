@@ -1,9 +1,9 @@
 import { CanvasTexture, LinearFilter, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
 
-const LARGURA_M: number = 0.3;
+const LARGURA_M: number = 0.4;
 const ALTURA_M: number = 0.18;
 
-const LARGURA_PX: number = 600;
+const LARGURA_PX: number = 800;
 const ALTURA_PX: number = 360;
 
 /** Em segundos. */

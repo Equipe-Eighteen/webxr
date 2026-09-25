@@ -134,7 +134,7 @@ export function montarCena(): CenaDoQuadro {
 
   const suporteDoPainel: Object3D = new Object3D();
   suporteDoPainel.name = 'suporte-do-painel';
-  suporteDoPainel.position.set(-0.42, ESPESSURA_DO_TAMPO / 2, -0.27);
+  suporteDoPainel.position.set(-0.55, 0.16, -0.27);
   tampo.add(suporteDoPainel);
 
   const pecas: Map<PecaId, Object3D> = new Map<PecaId, Object3D>();

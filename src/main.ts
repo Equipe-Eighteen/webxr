@@ -47,6 +47,26 @@ botaoReparentar.addEventListener('click', () => {
   botaoReparentar.disabled = true;
 });
 
+const posicaoOriginalDaPlaca = xr.quadro.placa.position.clone();
+const posicaoDeslocadaDaPlaca = posicaoOriginalDaPlaca.clone().add(new THREE.Vector3(0.2, 0, 0));
+let placaDeslocada = false;
+
+const botaoMoverPlaca: HTMLButtonElement = document.createElement('button');
+botaoMoverPlaca.type = 'button';
+botaoMoverPlaca.textContent = 'Mover a placa (demonstração)';
+botaoMoverPlaca.style.cssText =
+  'position:fixed;top:104px;left:12px;z-index:10;font:16px system-ui,sans-serif;' +
+  'padding:10px 16px;border-radius:8px;border:1px solid #4f7cff;background:#24243a;color:#eef0ff;cursor:pointer;';
+document.body.appendChild(botaoMoverPlaca);
+
+botaoMoverPlaca.addEventListener('click', () => {
+  placaDeslocada = !placaDeslocada;
+  xr.quadro.placa.position.copy(placaDeslocada ? posicaoDeslocadaDaPlaca : posicaoOriginalDaPlaca);
+  botaoMoverPlaca.textContent = placaDeslocada
+    ? 'Devolver a placa ao lugar (demonstração)'
+    : 'Mover a placa (demonstração)';
+});
+
 const controllers = setupControllers(renderer, xr.scene, xr.interactive);
 const arHitTest = setupARHitTest(renderer, xr.scene);
 
