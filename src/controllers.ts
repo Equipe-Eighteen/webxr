@@ -1,12 +1,6 @@
 import * as THREE from 'three';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-/**
- * Configura os dois controllers XR:
- *  - modelo 3D do controle
- *  - um "raio" de apontamento
- *  - pegar/soltar objetos com o gatilho (selectstart/selectend)
- */
 export function setupControllers(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
@@ -55,7 +49,7 @@ export function setupControllers(
     const hit = intersect(controller);
     if (hit) {
       const obj = hit.object;
-      controller.attach(obj); // "gruda" o objeto na mão
+      controller.attach(obj);
       selected.set(controller, obj);
     }
   }
@@ -63,13 +57,12 @@ export function setupControllers(
   function onSelectEnd(controller: THREE.XRTargetRaySpace): void {
     const obj = selected.get(controller);
     if (obj) {
-      scene.attach(obj); // solta de volta na cena
+      scene.attach(obj);
       selected.delete(controller);
     }
   }
 
   return {
-    /** Realça o objeto sob a mira de cada controller. */
     update(): void {
       for (const material of highlightReset) material.emissive.setHex(0x000000);
       highlightReset.length = 0;

@@ -1,10 +1,5 @@
 import * as THREE from 'three';
 
-/**
- * Hit-test de AR: detecta superfícies reais e mostra um retículo onde você
- * aponta. Ao tocar a tela, planta um objeto naquele ponto do mundo real.
- * Só funciona dentro de uma sessão AR com a feature 'hit-test'.
- */
 export function setupARHitTest(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,

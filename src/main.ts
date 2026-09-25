@@ -7,63 +7,65 @@ import { setupControllers } from './controllers';
 import { setupARHitTest } from './ar';
 import { sondarPagina, sondarSessao } from './xr/sonda';
 import { PainelDeSonda } from './xr/relatorio';
+import { Relogio, type Amostra } from './quadro/relogio';
+import { Orcamento, TETO_DESKTOP_MS, linhasDoOrcamento } from './quadro/orcamento';
+import { montarPainel, type Painel } from './quadro/painel';
+import { reparentar } from './quadro/hierarquia';
 
-// --- Renderer ---
 const container = document.getElementById('app') as HTMLDivElement;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.xr.enabled = true; // habilita o loop WebXR
+renderer.xr.enabled = true;
 container.appendChild(renderer.domElement);
 
-// --- Cena ---
 const xr = new XRScene();
 
-// Órbita com o mouse no desktop (fora do modo imersivo)
 const orbit = new OrbitControls(xr.camera, renderer.domElement);
 orbit.target.set(0, 1.2, -1);
 orbit.update();
 
-// --- Controllers XR ---
-const controllers = setupControllers(renderer, xr.scene, xr.interactive);
+const relogio = new Relogio();
+const orcamento = new Orcamento(TETO_DESKTOP_MS);
+const painel: Painel = montarPainel('Custo do quadro');
+xr.quadro.suporteDoPainel.add(painel.no);
 
-// --- AR hit-test ---
+const botaoReparentar: HTMLButtonElement = document.createElement('button');
+botaoReparentar.type = 'button';
+botaoReparentar.textContent = 'Fixar disjuntor 1 no trilho (demonstração)';
+botaoReparentar.style.cssText =
+  'position:fixed;top:56px;left:12px;z-index:10;font:16px system-ui,sans-serif;' +
+  'padding:10px 16px;border-radius:8px;border:1px solid #4f7cff;background:#24243a;color:#eef0ff;cursor:pointer;';
+document.body.appendChild(botaoReparentar);
+
+botaoReparentar.addEventListener('click', () => {
+  const disjuntor1 = xr.quadro.pecas.get('disjuntor-1');
+  if (!disjuntor1) return;
+  const desvioEmMetros: number = reparentar(disjuntor1, xr.quadro.trilho);
+  botaoReparentar.textContent = `Disjuntor 1 preso ao trilho (desvio de ${desvioEmMetros.toExponential(1)} m)`;
+  botaoReparentar.disabled = true;
+});
+
+const controllers = setupControllers(renderer, xr.scene, xr.interactive);
 const arHitTest = setupARHitTest(renderer, xr.scene);
 
-// --- Botões VR e AR ---
-// 'viewer' entra na lista mesmo sendo sempre concedido: alguns navegadores só
-// listam em `enabledFeatures` o que foi pedido explicitamente, e a sonda
-// (src/xr/sonda.ts) depende de enxergar 'viewer' isolado para inferir três
-// graus de liberdade em vez de reportar indeterminado por falta de dado.
-// VRButton e ARButton do Three.js usam o mesmo estilo inline fixo
-// (position: absolute; bottom: 20px; left: calc(50% - 50px)), então os dois
-// botões nascem empilhados exatamente no mesmo lugar. Empurramos o de VR
-// para cima do de AR para os dois ficarem visíveis e clicáveis.
 const vrButton = VRButton.createButton(renderer, { optionalFeatures: ['viewer'] });
 vrButton.style.bottom = '84px';
 document.body.appendChild(vrButton);
 
 document.body.appendChild(
   ARButton.createButton(renderer, {
-    // Nada em requiredFeatures: uma feature exigida que o aparelho não tem
-    // desabilita o botão inteiro, e o aluno vê um botão morto sem saber por quê.
-    // Como opcional, a sessão sobe e a ausência fica observável.
     requiredFeatures: [],
     optionalFeatures: ['hit-test', 'local-floor', 'bounded-floor', 'dom-overlay', 'viewer'],
     domOverlay: { root: document.body },
   }),
 );
 
-// --- Sonda de capacidades (Tarefa 1) e relatório visível (Tarefa 2) ---
 const painelDaSonda = new PainelDeSonda();
 
-// Etapa 1: o que a página descobre sozinha, sem sessão nenhuma.
 sondarPagina().then((leitura) => painelDaSonda.mostrarLeituraDePagina(leitura));
 
-// Etapa 2: só a sessão aberta responde. `renderer.xr` é notificado tanto pelo
-// clique em ENTER VR quanto em START AR, então um único par de escutas cobre
-// os dois botões.
 renderer.xr.addEventListener('sessionstart', () => {
   const session = renderer.xr.getSession();
   if (!session) return;
@@ -77,18 +79,20 @@ renderer.xr.addEventListener('sessionend', () => {
   painelDaSonda.marcarSessaoEncerrada();
 });
 
-// --- Loop de animação (use setAnimationLoop, NÃO requestAnimationFrame) ---
-const clock = new THREE.Clock();
+renderer.setAnimationLoop((timestampMs, frame) => {
+  const inicio: number = performance.now();
 
-renderer.setAnimationLoop((_timestamp, frame) => {
-  const delta = clock.getDelta();
-  xr.update(delta);
+  const amostra: Amostra = relogio.avancar(timestampMs);
   controllers.update();
   if (frame) arHitTest.update(frame);
+
   renderer.render(xr.scene, xr.camera);
+
+  const custoMs: number = performance.now() - inicio;
+  orcamento.registrar(custoMs, amostra.intervaloReal * 1000);
+  painel.atualizar(linhasDoOrcamento(orcamento.ler()), amostra.decorrido);
 });
 
-// --- Responsividade ---
 window.addEventListener('resize', () => {
   xr.camera.aspect = window.innerWidth / window.innerHeight;
   xr.camera.updateProjectionMatrix();

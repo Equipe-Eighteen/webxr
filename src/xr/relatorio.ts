@@ -1,27 +1,3 @@
-// ---------------------------------------------------------------------------
-// Torna o relatório da sonda visível no próprio aparelho.
-//
-// Um relatório que só existe no console de depuração serve a quem escreveu o
-// código. Este módulo escreve o mesmo relatório num painel de HTML comum,
-// que:
-//
-//   - aparece na tela de qualquer aparelho que abra a página, sem ferramenta
-//     nenhuma de desenvolvedor;
-//   - dentro de uma sessão de AR, continua visível através do recurso
-//     `dom-overlay` já pedido em `main.ts` — é por isso que este relatório
-//     mora no `document.body`, e não dentro de `#app`;
-//   - dentro de uma sessão de VR, o navegador não expõe DOM nenhum (a
-//     especificação não estende `dom-overlay` a sessões imersivas
-//     completas), então o relatório de VR se lê antes de entrar ou depois de
-//     sair — o que ainda cumpre a tarefa: o endereço continua respondendo,
-//     de forma legível, no navegador do próprio visor.
-//
-// A primeira linha do painel nunca muda de lugar: contexto seguro e presença
-// da API, escritas antes de qualquer outra informação. É a defesa contra o
-// engano descrito no material — um relatório inteiramente coerente e
-// inteiramente errado, produzido por uma página aberta sem cifragem.
-// ---------------------------------------------------------------------------
-
 import {
   RECURSOS_CONSULTADOS,
   classificarAparelho,
@@ -83,7 +59,6 @@ function linhaFonteDeEntrada(fonte: FonteDeEntrada, indice: number): string {
   );
 }
 
-/** Painel que renderiza e atualiza o relatório da sonda no `document.body`. */
 export class PainelDeSonda {
   private readonly raiz: HTMLElement;
   private readonly conteudo: HTMLElement;
@@ -109,20 +84,17 @@ export class PainelDeSonda {
     });
   }
 
-  /** Chamado com o resultado da etapa 1, assim que a página termina de carregar. */
   mostrarLeituraDePagina(leitura: LeituraDePagina): void {
     this.ultimaPagina = leitura;
     this.renderizar();
   }
-
-  /** Chamado com o resultado da etapa 2, toda vez que a sessão aberta tem algo novo a dizer. */
+  
   mostrarLeituraDeSessao(leitura: LeituraDeSessao): void {
     this.ultimaSessao = leitura;
     this.sessaoEncerrada = false;
     this.renderizar();
   }
 
-  /** Chamado quando a sessão termina — o relatório da sessão anterior continua na tela, mas identificado como encerrado. */
   marcarSessaoEncerrada(): void {
     this.sessaoEncerrada = true;
     this.renderizar();
