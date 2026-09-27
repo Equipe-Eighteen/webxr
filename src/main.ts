@@ -39,12 +39,17 @@ botaoReparentar.style.cssText =
   'padding:10px 16px;border-radius:8px;border:1px solid #4f7cff;background:#24243a;color:#eef0ff;cursor:pointer;';
 document.body.appendChild(botaoReparentar);
 
+let disjuntor1Fixado = false;
+
 botaoReparentar.addEventListener('click', () => {
   const disjuntor1 = xr.quadro.pecas.get('disjuntor-1');
   if (!disjuntor1) return;
-  const desvioEmMetros: number = reparentar(disjuntor1, xr.quadro.trilho);
-  botaoReparentar.textContent = `Disjuntor 1 preso ao trilho (desvio de ${desvioEmMetros.toExponential(1)} m)`;
-  botaoReparentar.disabled = true;
+  const novoPai = disjuntor1Fixado ? xr.quadro.tampo : xr.quadro.trilho;
+  const desvioEmMetros: number = reparentar(disjuntor1, novoPai);
+  disjuntor1Fixado = !disjuntor1Fixado;
+  botaoReparentar.textContent = disjuntor1Fixado
+    ? `Disjuntor 1 preso ao trilho (desvio de ${desvioEmMetros.toExponential(1)} m)`
+    : 'Fixar disjuntor 1 no trilho (demonstração)';
 });
 
 const posicaoOriginalDaPlaca = xr.quadro.placa.position.clone();
